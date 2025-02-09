@@ -1,5 +1,11 @@
 # Cloud Build configuration for HRMS Payroll Sync Service
 steps:
+  # Generate Gradle wrapper
+  - name: 'eclipse-temurin:21-jdk'
+    entrypoint: 'gradle'
+    args: ['wrapper']
+    id: 'generate-wrapper'
+
   # Make gradlew executable
   - name: 'ubuntu'
     args: ['chmod', '+x', 'gradlew']
