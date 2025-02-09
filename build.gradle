@@ -87,7 +87,8 @@ test {
 bootBuildImage {
     builder = "paketobuildpacks/builder:base"
     environment = [
-        "BP_JVM_VERSION": "21.*"
+        "BP_JVM_VERSION": "21",
+        "BP_JVM_TYPE": "JRE"
     ]
     
     imageName = "${project.name}"
