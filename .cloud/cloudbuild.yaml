@@ -1,15 +1,5 @@
 # Cloud Build configuration for HRMS Payroll Sync Service
 steps:
-  # Generate Gradle wrapper
-  - name: 'eclipse-temurin:21-jdk'
-    entrypoint: 'gradle'
-    args: ['wrapper']
-    id: 'generate-wrapper'
-
-  # Make gradlew executable
-  - name: 'ubuntu'
-    args: ['chmod', '+x', 'gradlew']
-    id: 'make-executable'
 
   # Build and push the container image using bootBuildImage
   - name: 'eclipse-temurin:21-jdk'
@@ -21,6 +11,7 @@ steps:
     ]
     env:
       - 'GRADLE_USER_HOME=/workspace/.gradle'
+      - 'JAVA_HOME=/opt/java/openjdk'  # Explicitly set JAVA_HOME
 
   # Tag the commit SHA image as latest
   - name: 'gcr.io/cloud-builders/docker'
