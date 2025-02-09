@@ -1,0 +1,25 @@
+spring:
+  cloud:
+    gcp:
+      project-id: test-project
+      credentials:
+        encoded-key: test-key
+
+hr:
+  api:
+    mock:
+      enabled: true
+    baseUrl: http://localhost:8080
+
+datacom:
+  api:
+    mock:
+      enabled: true
+    baseUrl: http://localhost:8080/datacom/api
+
+secrets:
+  integration:
+    services:
+      datacom-client-id: test-client-id
+      datacom-client-secret: test-client-secret
+      hr-system-api-key: test-api-key 

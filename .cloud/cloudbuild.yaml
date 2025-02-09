@@ -1,0 +1,52 @@
+# Cloud Build configuration for HRMS Payroll Sync Service
+steps:
+  # Build and push the container image using bootBuildImage
+  - name: 'eclipse-temurin:21-jdk'
+    entrypoint: './gradlew'
+    args: [
+      'bootBuildImage',
+      '--imageName=${_REGION}-docker.pkg.dev/${PROJECT_ID}/microservices/hrms-payroll-sync:${COMMIT_SHA}',
+      '--builder=paketobuildpacks/builder:base'
+    ]
+    env:
+      - 'GRADLE_USER_HOME=/workspace/.gradle'
+
+  # Tag the commit SHA image as latest
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'tag',
+      '${_REGION}-docker.pkg.dev/${PROJECT_ID}/microservices/hrms-payroll-sync:${COMMIT_SHA}',
+      '${_REGION}-docker.pkg.dev/${PROJECT_ID}/microservices/hrms-payroll-sync:latest'
+    ]
+
+  # Push both tags
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/microservices/hrms-payroll-sync:${COMMIT_SHA}']
+    
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/microservices/hrms-payroll-sync:latest']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'hrms-payroll-sync'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/microservices/hrms-payroll-sync:${COMMIT_SHA}'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--set-env-vars=SPRING_PROFILES_ACTIVE=sandbox'
+
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/microservices/hrms-payroll-sync:${COMMIT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/microservices/hrms-payroll-sync:latest'
+
+substitutions:
+  _REGION: us-central1
+
+options:
+  logging: CLOUD_LOGGING_ONLY 

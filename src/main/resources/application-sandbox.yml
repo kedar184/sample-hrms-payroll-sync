@@ -1,0 +1,9 @@
+spring:
+  cloud:
+    gcp:
+      pubsub:
+        enabled: true
+
+notification:
+  pubsub:
+    enabled: true 

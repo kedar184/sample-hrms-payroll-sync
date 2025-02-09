@@ -1,0 +1,152 @@
+I want to integrate my HR system with my payroll system. 
+@https://developers.datacomdirectaccess.co.nz/api/documentation/  this is the public API documentation for the payroll system.
+It is used to generate payroll for my company's new zealand employees. i have a HR management system that is master for employee and absence records. 
+The HR system produces change records in the form of a simple JSON payload when a employee record changes and when absence is logged by a user. It also offers REST API's to retrieve further details of the records. 
+I want to sync this data to my payroll system. The payroll system finally runs pay on a set day and makes data available related to the pay. 
+I dont have the specs for the HR management system so i want you to make some assumptions with the data model so it can be a cannonical model in future. 
+I also want you to incorporate all the best practices from our starter project that we built. 
+The tech stack will continue to be springboot. We will also continue to use GCP - pubsub for hr events with push subscription to service deployed on cloudrun. We will also use cloud build for CI and CD driven by the config-sync repository.
+
+The pubsub event will be a generic event that has attributes for event type that will help us determine the routing. 
+Aslo assume the event itself is more like a CDC event that tells what is the type, what record changed with the record identifier. 
+This record identifier will help us query the HR system for more attributes using the REST API provided by the HR system.
+
+Given that we dont have our HRMS system live implementation yet, can we create a mock to simulate the endpoints. 
+I want the mocks to be running as part of the same service. We can later use the same mocks for integration tests. 
+I want the ability to turn on the mock endpoints based on a flag in our application properties file. 
+
+The mocks looks good for a starting point. We want to do same with datacom api's. 
+Can you generate simillar mocks for the relevant endpoints ? Make sure you look at api documentation i provided earlier.
+
+Looks good for now. Lets focus on the data mapping between the 2 systems and the api call implementation. 
+Can you generate the mapping ? Assume its simple transforms as a starting point ? 
+We want to handle following scenarios as a starting point for different types of events, consider checking whether its a NZ employee in all scenraios- 
+1) New employee onboarded 
+2) Employee role change 
+3) Apply for leave
+4) Apply for backdated leave 
+5) Employee termination 
+
+Have you considered using a library like mapstruct or modelmapper for the data transformation ? 
+do u think that can simplify or it adds more complexity considering our use case ?
+
+ok makes sense. lets go with builder pattern. Implement it. 
+Also assume the check for NZ is based on a single attribute of the employee payload and not complex logic. We will cange the name of attribute once we have the spec
+
+Lets focus a bit on authentication now. I see that you have used a API key. Based on documentation do we need a access token ? 
+if so, implement it with a simple cache mechanism (no redis etc) and a check for expiry. 
+I also want the secrets (API key) to be stored in  GCP secrets manager. assume a naming convention that includes secrets/integration/services. We will work out IAM permissions later
+
+should we update our mock service to handle access token and have a stub for that ?
+
+Lets work on secret handling for our HR system API's. Assume its simple API key based auth with same mechanisms for secret handling - i.e. secrets manager. 
+Can you implement everything that is needed ?
+
+Remember, this service is triggered using a push subscription in pubsub and we are not using a pull subscription. 
+So can u modify accordingly and add a endpoiint to controller such that can acept a message from pubsub make sure the format matches
+
+change the @RequestMapping and @PostMapping in pubsub controller to something meaningful while this is not really a rest implementation
+lets use somthing like hrms/events
+
+We may need to change the processEmployeeEvent() to have conditional logic to handle create/update since the pubsub controller only routes to processEmployeeEvent or processAbsenceEvent now. 
+Make required changes for all scenarios.
+
+lets add some resilliancy to our api calls ? is resilliance4j still the best option ? it should take care of simple retry scenarios with http calls
+Also add some appropriate error handling based on pubsub push subscription error codes. 
+
+Ok i think i am reasonably happy with the base service now. Lets focus on the tests before we move on to observability and error handling. 
+Can you generate tests based on scenarios i had given earlier and maybe one for authentication ?
+
+ok makes sense. some tests are not fully generated maybe you ran out of tokens can you complete them ?
+@PayrollSyncServiceTest.java @PayrollSyncIntegrationTest.java @DatacomAuthServiceTest.java 
+
+Looks good for now, will come back to it later. Lets  focus on observibility now starting with logging and tracing first. 
+I want to use google cloud trace and  Opentelemetry based implementation. 
+
+Have u considered MDC context ? can we add record id and record type from our event to our log context ? 
+Also, i want to make sure payload logs can be enabled based on log levels.
+Trace span should be created for each HTTP call. Consider avoiding duplicate boilerplate code and if can be part of client classes.
+We can leave default settings for sampling.
+
+Can you explain how the "around" annotation works and how is the bean injected during the api calls ?
+
+Cool makes sense its using AOP with aspect annotation. Lets test this after deployment. 
+Let us now add some base metrics. i want to track a few metrics - employees onboarded, terminated etc and the success/failure rate of those events. 
+Can you add these metrics in the implementation ?
+
+Metrics is adding a lot of noise to code and maybe effects a bit of readability. 
+can u think of some ways to optimize this ? 
+if we cant optimize much i am thinking just tracking bare min - number of transactions processed with success/failure
+
+looks good i cant see the monitoring.md file u created. 
+also remember i am using google cloud monitoring which i believe has promql support but i dont have grafana would like to use native capabilities of cloud monitoring.
+
+we want to distinguish between business errors and technical errors. 
+The business errors which are due to data issues (based on error codes from our datacom API) would need a notification sent out to users.
+In such cases, the return code to pubsub should be 200 since we have now gracefully handled the errors.
+We would also push a message by populating relevant details along with our service name etc to a seperate pubsub topic for business notifications.
+
+Code is still complex for a simple feature. try to simplify it further. 
+the bare minimum requirement is that we need a simple json payload that can be sent to a pubsub topic. 
+Log.error should be still retained but in case of specific error types such as 400 (or based on specific API implementation). 
+Lets make the necessary changes.
+
+now lets add some code for sending out the business notification to a pubsub topic
+
+looking at the cloudbuild file, build is using java17 can we use 21 and can u check if there would be any compatibility issues
+we have used gradle:8.5-jdk21 instead of temurin. what is the widely adopted and recommended base image ? 
+Also we have used buildpacks now instead of standard docker file. is that widely accepted as best practice now ?
+
+i think we need the right libraries for pubsub. could it be because of java and spring boot compatibility issues. should we downgrade ?
+
+if (log.isDebugEnabled()) { why is this line required, lt should be just based on log levels
+
+if u have a look all test files are in src/test/java and not src/main/java already. 
+some of the errors may be related to junit/mockito imports can u go through all test classes and add any missing import statements ?
+
+api key handling error in hr client.  this should follow the same pattern as datacom 
+only difference is its simple API key based authentication
+datacom client uses restTemplate.postForObject vs HR client is using HttpMethod.GET in rest template. 
+make it standard based on best practice
+
+jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+why do we have jpa config in our application when we are not dealing with state
+
+rewrite all service tests since we have made some changes. 
+I have deleted some test classes that are no longer needed.
+
+add a gitgnore file
+since we are using buildpacks delete the docker file. should be good ?
+add a readme file that explains this project with a sequence diagram and use cases. explain the design, cloud native components used
+
+ok can u create some curl commands so i can test for different scenraios by running the service locally. 
+maybe just create them in a simple file so it can be used later
+
+change the script so that it prints the api response with code as well
+
+alright we have a clean build and local tests done lets get ready to ship it. Lets focus on gcp related aspects for all this to work. 
+Lets first do it using gcloud commands before we move on to terraform and add it to our infra repo. 
+Can u come up with steps for verifcation and execution considering - permissions for all resources, resources that need to be created (e.g. secrets) etc.
+
+Put this steps in a file called gcp-sandbox.sh so we can work through it
+
+Ok the service account is primarily for the microservice that would run on cloud run. Lets keep that in mind. 
+First consider the secret creation in the script. Look at the apiclient classes and see if the secret paths match while we are creating the secrets. 
+we are using secrets/integration/services. Fix appropriately
+
+modify the script use local environment variables for initial setting of the secrets. while we dont have any actual secrets yet it would ensure there are no secrets in script.
+
+datacom has 2 secrets right - client id and client secret that is used by datacomauthservice class
+
+gcloud pubsub subscriptions create hr-events-sub \
+    --topic hr-events \
+    --ack-deadline=30
+This looks like a pull subscription which is not what we want. 
+we will create this step in a seperate script since it needs the actual cloudrun endpoint to be able to create that subscription. 
+We can run cloudbuild and once cloudrun id deployed, we could create that as a second step. Can you action it ?
+
+i have renamed application-cloud.yml to application-sandbox.yml. Can u change cloudbuild accordingly so this is picked up as active profile?
+
