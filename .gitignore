@@ -2,9 +2,9 @@
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
-bin/
+!gradle/wrapper/gradle-wrapper.properties
 
-# IDE - IntelliJ IDEA
+# IDE files
 .idea/
 *.iws
 *.iml
@@ -19,8 +19,9 @@ out/
 
 # Compiled class files
 *.class
+bin/
 
-# Log files
+# Logs
 *.log
 logs/
 
@@ -37,16 +38,22 @@ logs/
 hs_err_pid*
 
 # Local configuration
-application-local.yml
-application-local.properties
+application-*.yml
+application-*.properties
+!application.yml
+!application.properties
 
 # OS specific
 .DS_Store
 Thumbs.db
 
 # Test reports
-test-results/
+test-output/
 reports/
 
 # Code coverage
-jacoco/ 
+jacoco/
+
+# Local environment files
+.env
+.env.local 
