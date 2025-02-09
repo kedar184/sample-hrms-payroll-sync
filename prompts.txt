@@ -150,3 +150,26 @@ We can run cloudbuild and once cloudrun id deployed, we could create that as a s
 
 i have renamed application-cloud.yml to application-sandbox.yml. Can u change cloudbuild accordingly so this is picked up as active profile?
 
+Some unnecessary changes have been made to cloudbuild file. revert all of them and just keep '--set-env-vars=SPRING_PROFILES_ACTIVE=sandbox'
+
+remove the testing step from gcp-sandbox script and move them into a seperate script since we would need it after cloud run deployment. Also organize all scripts in a seperate folder.
+
+lot of stuff s deleted from gcp sandbox script u may need to look at that and revert any changes/deletions
+i have renamed scripts in the scripts folder, update readme files accordingly
+
+add verification echo statements to gcp-init.sh to verify everything is setup correctly. we can assume service account permissions related to cloud build is taken care of seperately
+add condition to script if cloud resources already exist and skip the step, add print statements accordingly
+
+create a script to configure cloudbuild trigger so when we commit to this repo it creates the build. we will work through it name it gcp-cicd.sh
+
+i dont think we are following best practice in terms of service accounts.. we shouldnt use the same service account for the cloudbuild permission as well as the cloudrun service
+can u create a new service account for cloudbuild and use that for building the service and then use a different service account for running the service
+
+for sandbox dev, the cloud build doesnt need approvals. we will create approvals as part of cloud deploy
+
+how does the permissions for mirroring work is the script going to ask for oidc token ?
+
+the script is creating a workload identity pool. i already have a github workload identity stup as part of starter project can u use that
+
+i think its struck in a loop a few times.. lets use clickops for cloudbuild trigger. i would avoid cloud source repository for now and see if i can just use github-org-pool that exists to enable the build trigger. 
+we can move to terraform later

@@ -1,5 +1,10 @@
 # Cloud Build configuration for HRMS Payroll Sync Service
 steps:
+  # Make gradlew executable
+  - name: 'ubuntu'
+    args: ['chmod', '+x', 'gradlew']
+    id: 'make-executable'
+
   # Build and push the container image using bootBuildImage
   - name: 'eclipse-temurin:21-jdk'
     entrypoint: './gradlew'
