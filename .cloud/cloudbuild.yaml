@@ -14,8 +14,7 @@ steps:
       '--builder=paketobuildpacks/builder:base'
     ]
     env:
-      - 'JAVA_HOME=/opt/java/openjdk'
-      - 'GRADLE_USER_HOME=/workspace/.gradle'
+      - 'JAVA_TOOL_OPTIONS=-Duser.home=/workspace'
 
   # Tag the commit SHA image as latest
   - name: 'gcr.io/cloud-builders/docker'

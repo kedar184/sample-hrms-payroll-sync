@@ -85,11 +85,23 @@ test {
 }
 
 bootBuildImage {
-    builder = "paketobuildpacks/builder:base"
+    builder = 'paketobuildpacks/builder-jammy-tiny:latest'
     environment = [
-        "BP_JVM_VERSION": "21",
-        "BP_JVM_TYPE": "JRE"
+        'BP_JVM_VERSION': '21',
+        'BP_JVM_TYPE': 'JRE',
+        'BP_OCI_BASE_IMAGE': 'eclipse-temurin:21-jre',
+        'BP_OCI_RUN_IMAGE': 'eclipse-temurin:21-jre',
+        'BPE_CONTAINER_PORT': '8080',
+        'BPE_JAVA_TOOL_OPTIONS': '-XX:MaxRAMPercentage=75.0 -Dserver.port=8080 -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE:dev}',
+        'BP_INCLUDE_FILES': 'build/libs/*.jar',
+        'BP_GRADLE_BUILD_ARGUMENTS': '--no-daemon'
     ]
+    cleanCache = false
+    buildCache {
+        volume {
+            name = "pack-cache"
+        }
+    }
     
     imageName = "${project.name}"
     tags = ["latest"]
