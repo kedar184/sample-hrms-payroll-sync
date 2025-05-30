@@ -6,6 +6,8 @@ A cloud-native microservice that synchronizes HR events (employee updates, leave
 
 This service acts as an event-driven bridge between the HR system and Datacom Payroll, ensuring payroll data stays in sync with HR changes.
 
+---
+
 ## Architecture
 
 ```mermaid
@@ -35,6 +37,8 @@ sequenceDiagram
     end
 ```
 
+---
+
 ## Use Cases
 
 1. **Employee Onboarding**
@@ -56,19 +60,23 @@ sequenceDiagram
    - Service submits leave to Datacom
    - Handles different leave types
 
+---
+
 ## Cloud-Native Components
 
-### Google Cloud Platform
+**Google Cloud Platform**
 - **Cloud Run**: Hosts the stateless microservice
 - **Pub/Sub**: Event messaging for HR events and business notifications
 - **Secret Manager**: Secure storage for API credentials
 - **Cloud Build**: CI/CD pipeline
 - **Cloud Monitoring**: Observability and metrics
 
-### Spring Cloud GCP
+**Spring Cloud GCP**
 - PubSub integration
 - Secret Manager integration
 - Tracing and monitoring
+
+---
 
 ## Design Principles
 
@@ -89,6 +97,8 @@ sequenceDiagram
    - Rate limiting
    - Error handling
 
+---
+
 ## Configuration
 
 ### Profiles
@@ -99,6 +109,18 @@ sequenceDiagram
 - PubSub notifications
 - Mock API responses
 - Debug logging
+
+---
+
+## Prerequisites
+
+- **Java Development Kit (JDK)**: JDK 11 or newer
+- **Gradle**: Gradle 7.x or newer
+- **Google Cloud SDK (gcloud)**: Latest version recommended
+- **Docker**: Latest version recommended (if used for local testing or deployment)
+- **(Optional) IDE**: IntelliJ IDEA or VS Code with relevant plugins
+
+---
 
 ## Setup
 
@@ -126,15 +148,21 @@ sequenceDiagram
    ./gradlew bootRun
    ```
 
+---
+
 ## API Documentation
 
 OpenAPI documentation available at `/swagger-ui.html`
+
+---
 
 ## Monitoring
 
 - Health endpoint: `/actuator/health`
 - Metrics: `/actuator/metrics`
 - Prometheus: `/actuator/prometheus`
+
+---
 
 ## Error Handling
 
@@ -147,3 +175,34 @@ OpenAPI documentation available at `/swagger-ui.html`
    - Published to business-notifications topic
    - No retries
    - Logged for auditing 
+
+---
+
+## Contributing
+
+We welcome contributions to improve and expand this service. Please follow these guidelines:
+
+### Reporting Bugs
+- Use GitHub Issues to report bugs.
+- Provide detailed steps to reproduce the bug, including environment details and any relevant logs.
+
+### Suggesting Enhancements
+- Use GitHub Issues to suggest new features or enhancements.
+- Clearly describe the proposed enhancement and its potential benefits.
+
+### Pull Requests
+1. Fork the repository.
+2. Create a new branch for your changes (e.g., `feature/your-feature-name` or `bugfix/issue-number`).
+3. Make your changes, ensuring code is well-formatted and includes relevant comments.
+4. Add or update unit tests for your changes.
+5. Ensure all tests pass locally.
+6. Submit a pull request to the `main` branch.
+7. Provide a clear description of your changes in the pull request.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.
+
+*(Note: You may need to create a `LICENSE.md` file in the root of the repository if it doesn't exist yet.)*
